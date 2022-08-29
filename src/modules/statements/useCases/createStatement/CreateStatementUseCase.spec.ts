@@ -52,15 +52,42 @@ describe('Create Statement Test', () => {
     expect(deposit.type).toBe('deposit')
   })
 
+  it('Should be able to create a new ', async () => {
+    const user = await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@gmail.com',
+      password: 'password'
+    })
+
+    const user_id = user.id!
+
+    await createStatementUseCase.execute({
+      user_id: user_id,
+      type: OperationType.DEPOSIT,
+      amount: 1,
+      description: 'Depósito'
+    })
+
+    const withdraw = await createStatementUseCase.execute({
+      user_id: user_id,
+      type: OperationType.WITHDRAW,
+      amount: 1,
+      description: 'Saque'
+    })
+
+    expect(withdraw).toHaveProperty("id")
+    expect(withdraw).toHaveProperty("user_id")
+    expect(withdraw.type).toBe('withdraw')
+  })
+
   it('Should not be able to create a statement if user does not exists', async () => {
-    expect(async () => {
-      await createStatementUseCase.execute({
+    await expect(createStatementUseCase.execute({
         user_id: '12345',
         type: OperationType.DEPOSIT,
         amount: 100,
         description: 'Sei lá'
       })
-    }).rejects.toBeInstanceOf(CreateStatementError.UserNotFound)
+    ).rejects.toEqual(new CreateStatementError.UserNotFound())
   })
 
   it('Should be able to create a new withdraw', async () => {
@@ -93,21 +120,20 @@ describe('Create Statement Test', () => {
   })
 
   it('Should not be able to create a withdraw if user balance is empty', async () => {
-    expect(async () => {
-      const user = await createUserUseCase.execute({
-        name: 'User',
-        email: 'user@gmail.com',
-        password: 'password'
-      })
+    const user = await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@gmail.com',
+      password: 'password'
+    })
 
-      const user_id = user.id!
+    const user_id = user.id!
 
-      await createStatementUseCase.execute({
+    await expect(createStatementUseCase.execute({
         user_id: user_id,
         type: OperationType.WITHDRAW,
         amount: 50,
         description: 'Comprar pão po'
       })
-    }).rejects.toBeInstanceOf(CreateStatementError.InsufficientFunds)
+    ).rejects.toEqual(new CreateStatementError.InsufficientFunds())
   })
 })

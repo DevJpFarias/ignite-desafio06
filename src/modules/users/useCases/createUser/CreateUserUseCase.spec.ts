@@ -22,18 +22,17 @@ describe('Create User Test', () => {
   })
 
   it('Should not be able to create an existent user', async () => {
-    expect(async () => {
-      await createUserUseCase.execute({
-        name: 'name',
-        email: 'user@email.com',
-        password: 'password'
-      })
+    await createUserUseCase.execute({
+      name: 'name',
+      email: 'user@email.com',
+      password: 'password'
+    })
 
-      await createUserUseCase.execute({
+    await expect(createUserUseCase.execute({
         name: 'name',
         email: 'user@email.com',
         password: 'password'
       })
-    }).rejects.toBeInstanceOf(CreateUserError)
+    ).rejects.toEqual(new CreateUserError())
   })
 })

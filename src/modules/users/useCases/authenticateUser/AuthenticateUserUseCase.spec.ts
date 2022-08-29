@@ -30,17 +30,16 @@ describe('Authenticate User Test', () => {
   })
 
   it('Should not be able to authenticate if password is incorrect', async () => {
-    expect(async () => {
-      await createUserUseCase.execute({
-        name: 'User',
-        email: 'user@email.com',
-        password: 'password'
-      })
+    await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@email.com',
+      password: 'password'
+    })
 
-      await authenticateUserUseCase.execute({
+    await expect(authenticateUserUseCase.execute({
         email: 'user@email.com',
         password: 'incorrect'
       })
-    }).rejects.toBeInstanceOf(IncorrectEmailOrPasswordError)
+    ).rejects.toEqual(new IncorrectEmailOrPasswordError())
   })
 })

@@ -60,45 +60,43 @@ describe('Get Statement Operation Test', () => {
   })
 
   it('Should not be able to get a statement operation of a nonexistent user', async () => {
-    expect(async () => {
-      const user = await createUserUseCase.execute({
-        name: 'User',
-        email: 'user@gmail.com',
-        password: 'password'
-      })
+    const user = await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@gmail.com',
+      password: 'password'
+    })
 
-      const user_id = user.id!
+    const user_id = user.id!
 
-      const deposit = await createStatementUseCase.execute({
-        user_id: user_id,
-        type: OperationType.DEPOSIT,
-        amount: 1,
-        description: 'Sei lá'
-      })
+    const deposit = await createStatementUseCase.execute({
+      user_id: user_id,
+      type: OperationType.DEPOSIT,
+      amount: 1,
+      description: 'Sei lá'
+    })
 
-      const statement_id = deposit.id!
+    const statement_id = deposit.id!
 
-      const getStatementOperation = await getStatementOperationUseCase.execute({
+    await expect(getStatementOperationUseCase.execute({
         user_id: '12345',
         statement_id: statement_id
       })
-    }).rejects.toBeInstanceOf(GetStatementOperationError.UserNotFound)
+    ).rejects.toEqual(new GetStatementOperationError.UserNotFound())
   })
 
   it('Should not be able to get a nonexistent statement operation', async () => {
-    expect(async () => {
-      const user = await createUserUseCase.execute({
-        name: 'User',
-        email: 'user@gmail.com',
-        password: 'password'
-      })
+    const user = await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@gmail.com',
+      password: 'password'
+    })
 
-      const user_id = user.id!
+    const user_id = user.id!
 
-      const getStatementOperation = await getStatementOperationUseCase.execute({
+    await expect(getStatementOperationUseCase.execute({
         user_id: user_id,
         statement_id: '12345'
       })
-    }).rejects.toBeInstanceOf(GetStatementOperationError.StatementNotFound)
+    ).rejects.toEqual(new GetStatementOperationError.StatementNotFound())
   })
 })
