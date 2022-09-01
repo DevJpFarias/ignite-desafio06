@@ -1,7 +1,9 @@
 import { inject, injectable } from "tsyringe";
 
 import { IUsersRepository } from "../../../users/repositories/IUsersRepository";
+import { Statement } from "../../entities/Statement";
 import { IStatementsRepository } from "../../repositories/IStatementsRepository";
+import { TransferValueUseCase } from "../TransferValue/TransferValueUseCase";
 import { CreateStatementError } from "./CreateStatementError";
 import { ICreateStatementDTO } from "./ICreateStatementDTO";
 
@@ -15,7 +17,7 @@ export class CreateStatementUseCase {
     private statementsRepository: IStatementsRepository
   ) {}
 
-  async execute({ user_id, type, amount, description }: ICreateStatementDTO) {
+  async execute({ user_id, sender_id, type, amount, description }: ICreateStatementDTO): Promise<Statement> {
     const user = await this.usersRepository.findById(user_id);
 
     if(!user) {
@@ -23,7 +25,7 @@ export class CreateStatementUseCase {
     }
 
     if(type === 'withdraw') {
-      const { balance } = await this.statementsRepository.getUserBalance({ user_id });
+      const balance = user.balance
 
       if (balance < amount) {
         throw new CreateStatementError.InsufficientFunds()
@@ -32,10 +34,19 @@ export class CreateStatementUseCase {
 
     const statementOperation = await this.statementsRepository.create({
       user_id,
+      sender_id,
       type,
       amount,
       description
     });
+
+    if(type === 'withdraw') {
+      await this.usersRepository.withdraw(user, amount)
+    }
+
+    if(type === 'deposit') {
+      await this.usersRepository.deposit(user, amount)
+    }
 
     return statementOperation;
   }

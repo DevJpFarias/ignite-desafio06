@@ -1,4 +1,5 @@
 import { getRepository, Repository } from "typeorm";
+import { floatToIntegerCents } from "../../../shared/utils/stringUtil";
 
 import { User } from "../entities/User";
 import { ICreateUserDTO } from "../useCases/createUser/ICreateUserDTO";
@@ -25,5 +26,38 @@ export class UsersRepository implements IUsersRepository {
     const user = this.repository.create({ name, email, password });
 
     return this.repository.save(user);
+  }
+
+  async deposit(user: User, amount: number): Promise<User> {
+    const value_cents = await floatToIntegerCents(amount)
+
+    user.balance += value_cents
+
+    await this.repository.save(user)
+
+    return user
+  }
+
+  async withdraw(user: User, amount: number): Promise<User> {
+    const value_cents = await floatToIntegerCents(amount)
+
+    user.balance -= value_cents
+
+    await this.repository.save(user)
+
+    return user
+  }
+
+  async transfer(provider: User, receiver: User, amount: number): Promise<User[]> {
+    const value_cents = await floatToIntegerCents(amount)
+
+    provider.balance -= value_cents
+
+    receiver.balance += value_cents
+
+    await this.repository.save(provider)
+    await this.repository.save(receiver)
+
+    return [ provider, receiver ]
   }
 }

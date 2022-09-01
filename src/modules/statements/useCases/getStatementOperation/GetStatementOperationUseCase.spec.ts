@@ -8,6 +8,7 @@ import { GetStatementOperationUseCase } from "./GetStatementOperationUseCase"
 enum OperationType {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw',
+  TRANSFER = 'transfer'
 }
 
 let inMemoryUsersRepository: InMemoryUsersRepository

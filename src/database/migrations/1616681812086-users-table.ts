@@ -25,6 +25,11 @@ export class usersTable1616681812086 implements MigrationInterface {
           type: 'varchar',
         },
         {
+          name: 'balance',
+          type: 'integer',
+          default: 0
+        },
+        {
           name: 'created_at',
           type: 'timestamp',
           default: 'now()'
@@ -41,5 +46,4 @@ export class usersTable1616681812086 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('users');
   }
-
 }

@@ -5,10 +5,10 @@ import { GetBalanceUseCase } from "../getBalance/GetBalanceUseCase"
 import { CreateStatementError } from "./CreateStatementError"
 import { CreateStatementUseCase } from "./CreateStatementUseCase"
 
-
 enum OperationType {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw',
+  TRANSFER = 'transfer'
 }
 
 let inMemoryStatementsRepository: InMemoryStatementsRepository
@@ -47,12 +47,15 @@ describe('Create Statement Test', () => {
       description: 'Sei lá'
     })
 
+    const new_user = await inMemoryUsersRepository.findById(user_id)
+
     expect(deposit).toHaveProperty("id")
     expect(deposit).toHaveProperty("user_id")
+    expect(new_user?.balance).toEqual(1)
     expect(deposit.type).toBe('deposit')
   })
 
-  it('Should be able to create a new ', async () => {
+  it('Should be able to sum the values of deposits', async () => {
     const user = await createUserUseCase.execute({
       name: 'User',
       email: 'user@gmail.com',
@@ -64,20 +67,44 @@ describe('Create Statement Test', () => {
     await createStatementUseCase.execute({
       user_id: user_id,
       type: OperationType.DEPOSIT,
-      amount: 1,
-      description: 'Depósito'
+      amount: 10,
+      description: 'Sei lá'
     })
 
-    const withdraw = await createStatementUseCase.execute({
+    await createStatementUseCase.execute({
       user_id: user_id,
-      type: OperationType.WITHDRAW,
-      amount: 1,
-      description: 'Saque'
+      type: OperationType.DEPOSIT,
+      amount: 15,
+      description: 'Sei lá'
     })
 
-    expect(withdraw).toHaveProperty("id")
-    expect(withdraw).toHaveProperty("user_id")
-    expect(withdraw.type).toBe('withdraw')
+    const new_user = await inMemoryUsersRepository.findById(user_id)
+
+    expect(new_user?.balance).toEqual(25)
+  })
+
+  it('Should be able to create a new deposit with decimal value', async () => {
+    const user = await createUserUseCase.execute({
+      name: 'User',
+      email: 'user@gmail.com',
+      password: 'password'
+    })
+
+    const user_id = user.id!
+
+    const deposit = await createStatementUseCase.execute({
+      user_id: user_id,
+      type: OperationType.DEPOSIT,
+      amount: 1.50,
+      description: 'Sei lá'
+    })
+
+    const new_user = await inMemoryUsersRepository.findById(user_id)
+
+    expect(deposit).toHaveProperty("id")
+    expect(deposit).toHaveProperty("user_id")
+    expect(new_user?.balance).toEqual(1.50)
+    expect(deposit.type).toBe('deposit')
   })
 
   it('Should not be able to create a statement if user does not exists', async () => {
@@ -102,20 +129,22 @@ describe('Create Statement Test', () => {
     await createStatementUseCase.execute({
       user_id: user_id,
       type: OperationType.DEPOSIT,
-      amount: 100,
+      amount: 10,
       description: 'Sei lá'
     })
 
     const statementWithdraw = await createStatementUseCase.execute({
       user_id: user_id,
       type: OperationType.WITHDRAW,
-      amount: 50,
+      amount: 3,
       description: 'Comprar pão po'
     })
 
+    const new_user = await inMemoryUsersRepository.findById(user_id)
 
     expect(statementWithdraw).toHaveProperty('id')
     expect(statementWithdraw).toHaveProperty('user_id')
+    expect(new_user?.balance).toEqual(7)
     expect(statementWithdraw.type).toBe('withdraw')
   })
 

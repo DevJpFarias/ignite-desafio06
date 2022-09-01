@@ -31,11 +31,16 @@ export class GetBalanceUseCase {
       throw new GetBalanceError();
     }
 
-    const balance = await this.statementsRepository.getUserBalance({
+    const balance = user.balance
+
+    const statements = await this.statementsRepository.getUserBalance({
       user_id,
       with_statement: true
     });
 
-    return balance as IResponse;
+    return {
+      statement: statements,
+      balance
+    };
   }
 }

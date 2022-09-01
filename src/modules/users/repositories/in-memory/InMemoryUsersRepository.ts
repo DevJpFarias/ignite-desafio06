@@ -20,4 +20,32 @@ export class InMemoryUsersRepository implements IUsersRepository {
     this.users.push(user);
     return user;
   }
+
+  async deposit(user: User, amount: number): Promise<User> {
+    const findIndexUser = this.users.findIndex(update_user => update_user.id === user.id)
+
+    this.users[findIndexUser].balance += amount
+
+    return user
+  }
+
+  async withdraw(user: User, amount: number): Promise<User> {
+    const findIndexUser = this.users.findIndex(update_user => update_user.id === user.id)
+
+    this.users[findIndexUser].balance -= amount
+
+    return user
+  }
+
+  async transfer(provider: User, receiver: User, amount: number): Promise<User[]> {
+    const findIndexProvider = this.users.findIndex(update_provider => update_provider.id === provider.id)
+
+    this.users[findIndexProvider].balance -= amount
+
+    const findIndexReceiver = this.users.findIndex(update_receiver => update_receiver.id === receiver.id)
+
+    this.users[findIndexReceiver].balance += amount
+
+    return [ provider, receiver ]
+  }
 }
